@@ -59,19 +59,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         payment.Property(x => x.Method)
             .HasColumnName("method")
-            .IsRequired()
             .HasMaxLength(20)
             .HasColumnType("character varying(20)");
 
         payment.Property(x => x.Provider)
             .HasColumnName("provider")
-            .IsRequired()
             .HasMaxLength(20)
             .HasColumnType("character varying(20)");
 
         payment.Property(x => x.TransactionId)
             .HasColumnName("transaction_id")
-            .IsRequired()
             .HasColumnType("character varying(150)");
 
         payment.Property(x => x.PaidAt)

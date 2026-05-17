@@ -19,10 +19,10 @@ namespace PaymentService.Migrations
                     booking_id = table.Column<long>(type: "bigint", nullable: false),
                     keycloak_id = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
-                    provider = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    provider = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    transaction_id = table.Column<string>(type: "character varying(150)", nullable: false),
-                    method = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    transaction_id = table.Column<string>(type: "character varying(150)", nullable: true),
+                    method = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     paid_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     failed_at = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },

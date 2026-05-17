@@ -12,7 +12,7 @@ using PaymentService.Data;
 namespace PaymentService.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260516041443_Init")]
+    [Migration("20260517035319_Init")]
     partial class Init
     {
         /// <inheritdoc />
@@ -51,7 +51,6 @@ namespace PaymentService.Migrations
                         .HasColumnName("keycloak_id");
 
                     b.Property<string>("Method")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("method");
@@ -61,7 +60,6 @@ namespace PaymentService.Migrations
                         .HasColumnName("paid_at");
 
                     b.Property<string>("Provider")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)")
                         .HasColumnName("provider");
@@ -73,7 +71,6 @@ namespace PaymentService.Migrations
                         .HasColumnName("status");
 
                     b.Property<string>("TransactionId")
-                        .IsRequired()
                         .HasColumnType("character varying(150)")
                         .HasColumnName("transaction_id");
 
