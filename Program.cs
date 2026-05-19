@@ -29,6 +29,11 @@ builder.Services.AddSingleton(_ =>
     new PayOSClient(payOsConfigs.ClientId, payOsConfigs.ApiKey, payOsConfigs.ChecksumKey));
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
