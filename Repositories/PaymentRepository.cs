@@ -14,22 +14,18 @@ public class PaymentRepository(AppDbContext db)
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Payment?> FindByBookingIdAndKeycloakIdAsync(
+    public Task<Payment?> FindByBookingIdAndKeycloakIdAsync(
         long bookingId,
         string keycloakId,
         CancellationToken cancellationToken = default
     )
-    {
-        return await _db.Payments
+        => _db.Payments
             .Where(x => x.BookingId == bookingId && x.KeycloakId == keycloakId)
             .OrderByDescending(x => x.Id)
             .FirstOrDefaultAsync(cancellationToken);
-    }
 
-    public async Task<Payment?> FindByIdAsync(long id, CancellationToken cancellationToken = default)
-    {
-        return await _db.Payments.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
-    }
+    public Task<Payment?> FindByIdAsync(long id, CancellationToken cancellationToken = default)
+        => _db.Payments.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
     public async Task UpdateAsync(Payment payment, CancellationToken cancellationToken = default)
     {

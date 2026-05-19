@@ -7,6 +7,10 @@
     <UserSecretsId>5f595e03-571a-4114-8e12-484514497bd0</UserSecretsId>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <WarningsAsErrors>$(WarningsAsErrors);NU1903;NU1904</WarningsAsErrors>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="DotNetCore.CAP" Version="10.0.1" />
     <PackageReference Include="DotNetCore.CAP.Kafka" Version="10.0.1" />

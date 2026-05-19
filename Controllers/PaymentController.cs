@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using PayOS.Models.Webhooks;
 using PaymentService.DTOs;
 using PaymentDomainService = PaymentService.Services.PaymentService;
+using Common.DTOs;
 
 namespace PaymentService.Controllers;
 
@@ -23,7 +24,12 @@ public class PaymentController(PaymentDomainService paymentService) : Controller
     )
     {
         var keycloakId = GetCurrentKeycloakId();
-        var response = await _paymentService.ProcessPaymentAsync(keycloakId, dto, cancellationToken);
+        var paymentRes = await _paymentService.ProcessPaymentAsync(keycloakId, dto, cancellationToken);
+        var response = HttpApiResponseDto<ProcessPaymentResponseDto>.Success(
+            paymentRes,
+            "Payment completed successfully"
+        );
+
         return Ok(response);
     }
 
