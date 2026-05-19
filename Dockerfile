@@ -30,7 +30,7 @@ FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION}-noble-chiseled-extra AS p
 WORKDIR /app
 
 ENV ASPNETCORE_ENVIRONMENT=Production \
-    ASPNETCORE_HTTP_PORTS=5247=http://+:5247 
+    ASPNETCORE_URLS=http://+:5247
 
 EXPOSE 5247
 
