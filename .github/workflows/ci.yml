@@ -1,0 +1,108 @@
+name: CI pipeline
+
+on:
+  push:
+    branches: [main]
+
+env:
+  DOTNET_VERSION: "10.0.x"
+  BUILD_CONFIGURATION: "Release"
+  IMAGE_NAME: "docker.io/tienhai2808/stay_saga-payment"
+  DOCKERHUB_USERNAME: "tienhai2808"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  ci:
+    name: Secure checks + Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Secrets scan (gitleaks)
+        run: |
+          curl -sSfL \
+            "https://github.com/gitleaks/gitleaks/releases/download/v8.30.0/gitleaks_8.30.0_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          ./gitleaks detect --source . --redact --exit-code 1
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'nuget.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore + SCA (high/critical only)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          dotnet restore "PaymentService.sln" \
+            --nologo \
+            -p:NuGetAudit=true \
+            -p:NuGetAuditMode=all \
+            -p:NuGetAuditLevel=high
+
+      - name: Build
+        run: |
+          dotnet build "PaymentService.sln" \
+            --configuration "${{ env.BUILD_CONFIGURATION }}" \
+            --no-restore \
+            --nologo \
+            /p:ContinuousIntegrationBuild=true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image once (for scan + push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true
+          push: false
+          tags: ${{ env.IMAGE_NAME }}:latest
+          secrets: |
+            github_token=${{ secrets.GITHUB_TOKEN }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Container scan (Trivy)
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}:latest
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push image to Docker Hub
+        run: docker push ${{ env.IMAGE_NAME }}:latest
+
+      - name: Result
+        if: always()
+        run: |
+          echo "Workflow done"
+          echo "Image: ${{ env.IMAGE_NAME }}:latest"
