@@ -52,6 +52,13 @@ namespace PaymentService.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("method");
 
+                    b.Property<int>("OrderCode")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("order_code");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("OrderCode"));
+
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("paid_at");
@@ -72,6 +79,9 @@ namespace PaymentService.Migrations
                         .HasColumnName("transaction_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OrderCode")
+                        .IsUnique();
 
                     b.ToTable("payments", null, t =>
                         {

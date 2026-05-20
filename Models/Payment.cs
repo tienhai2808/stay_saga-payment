@@ -3,6 +3,7 @@ namespace PaymentService.Models;
 public class Payment
 {
     public long Id { get; set; }
+    public int OrderCode { get; set; }
     public long BookingId { get; set; }
     public string KeycloakId { get; set; } = string.Empty;
     public decimal Amount { get; set; }

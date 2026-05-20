@@ -40,7 +40,10 @@ public class PaymentController(PaymentDomainService paymentService) : Controller
     )
     {
         await _paymentService.HandlePayOsWebhookAsync(webhook, cancellationToken);
-        return Ok(new { message = "Webhook processed successfully." });
+        var response = HttpApiResponseDto<object>.Success(
+            "Webhook processed successfully" 
+        );
+        return Ok(response);
     }
 
     private string GetCurrentKeycloakId()

@@ -27,6 +27,9 @@ public class PaymentRepository(AppDbContext db)
     public Task<Payment?> FindByIdAsync(long id, CancellationToken cancellationToken = default)
         => _db.Payments.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
 
+    public Task<Payment?> FindByOrderCodeAsync(long orderCode, CancellationToken cancellationToken = default)
+        => _db.Payments.FirstOrDefaultAsync(x => x.OrderCode == orderCode, cancellationToken);
+
     public async Task UpdateAsync(Payment payment, CancellationToken cancellationToken = default)
     {
         _db.Payments.Update(payment);

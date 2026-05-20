@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,6 +17,8 @@ namespace PaymentService.Migrations
                 columns: table => new
                 {
                     id = table.Column<long>(type: "bigint", nullable: false),
+                    order_code = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     booking_id = table.Column<long>(type: "bigint", nullable: false),
                     keycloak_id = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     amount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
@@ -33,6 +36,12 @@ namespace PaymentService.Migrations
                     table.CheckConstraint("ck_payments_provider", "provider IN ('payos', 'momo', 'vnpay')");
                     table.CheckConstraint("ck_payments_status", "status in ('pending', 'paid', 'failed', 'refunded')");
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_payments_order_code",
+                table: "payments",
+                column: "order_code",
+                unique: true);
         }
 
         /// <inheritdoc />

@@ -41,10 +41,12 @@ public class PaymentService(
         var amount = Convert.ToInt64(Math.Round(payment.Amount, MidpointRounding.AwayFromZero));
         if (amount <= 0)
             throw new BadRequestException("Payment amount must be greater than zero.");
+        if (payment.OrderCode <= 0)
+            throw new InternalServerException("Payment order code is invalid.");
 
         var paymentRequest = new CreatePaymentLinkRequest
         {
-            OrderCode = payment.Id,
+            OrderCode = payment.OrderCode,
             Amount = amount,
             Description = BuildDescription(payment.BookingId),
             ReturnUrl = _payOsConfigs.ReturnUrl,
@@ -73,7 +75,7 @@ public class PaymentService(
         {
             PaymentId = payment.Id,
             BookingId = payment.BookingId,
-            OrderCode = payment.Id,
+            OrderCode = payment.OrderCode,
             PaymentLinkId = paymentLink.PaymentLinkId ?? string.Empty,
             CheckoutUrl = paymentLink.CheckoutUrl ?? string.Empty,
             QrCode = paymentLink.QrCode ?? string.Empty,
@@ -87,7 +89,7 @@ public class PaymentService(
     {
         var verifiedData = await _payOsClient.Webhooks.VerifyAsync(webhook);
 
-        var payment = await _paymentRepo.FindByIdAsync(verifiedData.OrderCode, cancellationToken)
+        var payment = await _paymentRepo.FindByOrderCodeAsync(verifiedData.OrderCode, cancellationToken)
             ?? throw new NotFoundException("Payment not found.");
 
         var isPaymentSuccess = string.Equals(verifiedData.Code, "00", StringComparison.Ordinal)

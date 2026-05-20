@@ -36,6 +36,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasColumnName("id")
             .ValueGeneratedNever();
 
+        payment.Property(x => x.OrderCode)
+            .HasColumnName("order_code")
+            .ValueGeneratedOnAdd()
+            .UseIdentityByDefaultColumn();
+
+        payment.HasIndex(x => x.OrderCode)
+            .IsUnique();
+
         payment.Property(x => x.KeycloakId)
             .HasColumnName("keycloak_id")
             .IsRequired()
