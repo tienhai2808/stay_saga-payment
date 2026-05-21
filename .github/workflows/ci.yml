@@ -41,14 +41,6 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props', '**/*.targets', 'nuget.config') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-
       - name: Restore + SCA (high/critical only)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
