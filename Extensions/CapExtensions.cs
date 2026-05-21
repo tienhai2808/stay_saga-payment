@@ -5,7 +5,7 @@ namespace PaymentService.Extensions;
 
 public static class CapExtensions
 {
-    public static IServiceCollection AddConsumerMessaging(
+    public static IServiceCollection AddMessaging(
         this IServiceCollection services,
         IConfiguration configuration
     )

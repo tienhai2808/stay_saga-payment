@@ -14,14 +14,13 @@ public class PaymentRepository(AppDbContext db)
         await _db.SaveChangesAsync(cancellationToken);
     }
 
-    public Task<Payment?> FindByBookingIdAndKeycloakIdAsync(
+    public Task<Payment?> FindUnpaidByBookingIdAndKeycloakIdAsync(
         long bookingId,
         string keycloakId,
         CancellationToken cancellationToken = default
     )
         => _db.Payments
-            .Where(x => x.BookingId == bookingId && x.KeycloakId == keycloakId)
-            .OrderByDescending(x => x.Id)
+            .Where(x => x.BookingId == bookingId && x.KeycloakId == keycloakId && x.Status != PaymentStatuses.Paid)
             .FirstOrDefaultAsync(cancellationToken);
 
     public Task<Payment?> FindByIdAsync(long id, CancellationToken cancellationToken = default)
@@ -35,4 +34,16 @@ public class PaymentRepository(AppDbContext db)
         _db.Payments.Update(payment);
         await _db.SaveChangesAsync(cancellationToken);
     }
+
+    public Task<List<Payment>> FindAllByKeycloakIdAndBookingIdAsync(
+        long bookingId,
+        string keycloakId,
+        CancellationToken cancellationToken = default
+    )
+        => _db.Payments
+            .Where(x => x.BookingId == bookingId && x.KeycloakId == keycloakId)
+            .OrderByDescending(x => x.Id)
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
 }

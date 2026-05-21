@@ -7,18 +7,23 @@ using PaymentService.Models;
 using PaymentService.Repositories;
 using Common.Exceptions;
 using PaymentService.Configs;
+using DotNetCore.CAP;
+using Common.Constants;
+using Common.Events;
 
 namespace PaymentService.Services;
 
 public class PaymentService(
     PayOSClient payOsClient,
     PayOSConfigs payOsConfigs,
-    PaymentRepository paymentRepo
+    PaymentRepository paymentRepo,
+    ICapPublisher capPublisher
 )
 {
     private readonly PayOSClient _payOsClient = payOsClient;
     private readonly PayOSConfigs _payOsConfigs = payOsConfigs;
     private readonly PaymentRepository _paymentRepo = paymentRepo;
+    private readonly ICapPublisher _capPublisher = capPublisher;
 
     public async Task<ProcessPaymentResponseDto> ProcessPaymentAsync(
         string keycloakId,
@@ -29,14 +34,11 @@ public class PaymentService(
         if (!long.TryParse(request.BookingId, out var bookingId))
             throw new BadRequestException("Invalid booking id.");
 
-        var payment = await _paymentRepo.FindByBookingIdAndKeycloakIdAsync(
+        var payment = await _paymentRepo.FindUnpaidByBookingIdAndKeycloakIdAsync(
             bookingId,
             keycloakId,
             cancellationToken
         ) ?? throw new NotFoundException("Payment not found for this booking.");
-
-        if (payment.Status == PaymentStatuses.Paid)
-            throw new BadRequestException("Booking has already been paid.");
 
         var amount = Convert.ToInt64(Math.Round(payment.Amount, MidpointRounding.AwayFromZero));
         if (amount <= 0)
@@ -113,6 +115,16 @@ public class PaymentService(
         }
 
         await _paymentRepo.UpdateAsync(payment, cancellationToken);
+
+        if (isPaymentSuccess)
+        {
+            await _capPublisher.PublishAsync(TopicConstants.PaymentSuccessTopic, new PaymentSuccessEvent
+            {
+                BookingId = payment.BookingId,
+                KeycloakId = payment.KeycloakId,
+                OccurredAt = DateTime.UtcNow
+            }, callbackName: null, cancellationToken);
+        }
     }
 
     private static string BuildDescription(long bookingId)
