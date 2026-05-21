@@ -91,8 +91,9 @@ public class PaymentService(
     {
         var verifiedData = await _payOsClient.Webhooks.VerifyAsync(webhook);
 
-        var payment = await _paymentRepo.FindByOrderCodeAsync(verifiedData.OrderCode, cancellationToken)
-            ?? throw new NotFoundException("Payment not found.");
+        var payment = await _paymentRepo.FindByOrderCodeAsync(verifiedData.OrderCode, cancellationToken);
+        if (payment == null)
+            return;
 
         var isPaymentSuccess = string.Equals(verifiedData.Code, "00", StringComparison.Ordinal)
             || string.Equals(webhook.Code, "00", StringComparison.Ordinal)
